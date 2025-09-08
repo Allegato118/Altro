@@ -1,10 +1,3 @@
-# ***
-# ***  SITO NON UFFICIALE - UNOFFICIAL SITE  ***
-# ***
-# ***  UNOFFICIAL SITE - SITO NON UFFICIALE  ***
-# ***
-
-# <>
 #
 
 # Materiale di prova"

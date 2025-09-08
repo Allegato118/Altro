@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Image Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b5, #004182);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .input-section {
+            margin-bottom: 40px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="url"] {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #0077b5;
+            box-shadow: 0 0 0 3px rgba(0, 119, 181, 0.1);
+        }
+
+        .extract-btn {
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .extract-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 119, 181, 0.3);
+        }
+
+        .extract-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #0077b5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+
+        .image-info {
+            margin-bottom: 15px;
+        }
+
+        .image-url {
+            font-size: 0.8em;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .image-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .download-btn, .copy-btn, .open-btn {
+            flex: 1;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #218838;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .open-btn {
+            background: #007bff;
+            color: white;
+        }
+
+        .open-btn:hover {
+            background: #0056b3;
+        }
+
+        .debug-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .images-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖼️ LinkedIn Image Extractor</h1>
+            <p>Estrai tutti i link alle immagini da un post LinkedIn</p>
+        </div>
+
+        <div class="main-content">
+            <div class="input-section">
+                <div class="input-group">
+                    <input 
+                        type="url" 
+                        id="linkedinUrl" 
+                        placeholder="Incolla qui il link del post LinkedIn..." 
+                        value="https://www.linkedin.com/posts/roberto-lambruschi-90877555_se-non-studi-resti-spettatore-la-verit%C3%A0-activity-7370704265952079872-DE0W"
+                    >
+                    <button class="extract-btn" onclick="extractImages()">
+                        Scansiona Post
+                    </button>
+                </div>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Scansionando il post LinkedIn...</p>
+            </div>
+
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        async function extractImages() {
+            const url = document.getElementById('linkedinUrl').value.trim();
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const extractBtn = document.querySelector('.extract-btn');
+
+            if (!url) {
+                showStatus('error', 'Per favore inserisci un URL valido');
+                return;
+            }
+
+            if (!url.includes('linkedin.com')) {
+                showStatus('error', 'L\'URL deve essere di LinkedIn');
+                return;
+            }
+
+            // Reset
+            resultsDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+            extractBtn.disabled = true;
+            extractBtn.textContent = 'Scansionando...';
+
+            try {
+                console.log('Iniziando scansione per:', url);
+                
+                // Prova diversi proxy CORS
+                const proxies = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://corsproxy.io/?',
+                    'https://cors-anywhere.herokuapp.com/',
+                    'https://thingproxy.freeboard.io/fetch/'
+                ];
+
+                let html = null;
+                let usedProxy = null;
+
+                for (const proxy of proxies) {
+                    try {
+                        console.log(`Tentativo con proxy: ${proxy}`);
+                        const response = await fetch(proxy + encodeURIComponent(url), {
+                            headers: {
+                                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            html = await response.text();
+                            usedProxy = proxy;
+                            console.log(`Successo con proxy: ${proxy}`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`Fallito proxy ${proxy}:`, e.message);
+                        continue;
+                    }
+                }
+
+                if (!html) {
+                    throw new Error('Impossibile accedere al post. Tutti i proxy hanno fallito.');
+                }
+
+                console.log('HTML ottenuto, lunghezza:', html.length);
+                
+                // Estrai le immagini dall'HTML
+                const images = extractImageUrls(html);
+                
+                loadingDiv.style.display = 'none';
+                extractBtn.disabled = false;
+                extractBtn.textContent = 'Scansiona Post';
+
+                if (images.length > 0) {
+                    showStatus('success', `Trovate ${images.length} immagini nel post! (Proxy usato: ${usedProxy})`);
+                    displayImages(images);
+                } else {
+                    showStatus('info', 'Nessuna immagine trovata. Il post potrebbe essere privato o non contenere immagini.');
+                    showDebugInfo(html.substring(0, 2000) + '...');
+                }
+
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                extractBtn.disabled = false;
+                extractBtn.textContent = 'Scansiona Post';
+                
+                console.error('Errore:', error);
+                showStatus('error', `Errore: ${error.message}`);
+                showStatus('info', 'Suggerimento: Prova ad aprire il post in una nuova finestra, fare ispeziona elemento e cercare manualmente i link alle immagini negli elementi img.');
+            }
+        }
+
+        function extractImageUrls(html) {
+            const images = [];
+            const imageRegexes = [
+                // LinkedIn CDN images - pattern più specifici
+                /https:\/\/media\.licdn\.com\/dms\/image\/[^"'\s)]+/g,
+                /https:\/\/media-exp\d*\.licdn\.com\/[^"'\s)]+/g,
+                /https:\/\/dms\.licdn\.com\/[^"'\s)]+/g,
+                // Altri pattern comuni
+                /src=["']([^"']*(?:jpe?g|png|gif|webp)[^"']*["'])/gi,
+                /data-delayed-url=["']([^"']*(?:jpe?g|png|gif|webp)[^"']*["'])/gi,
+                // Pattern più generici per immagini
+                /https?:\/\/[^"'\s)]*\.(?:jpe?g|png|gif|webp)(?:\?[^"'\s)]*)?/gi
+            ];
+
+            console.log('Cercando immagini nell\'HTML...');
+            
+            imageRegexes.forEach((regex, index) => {
+                const matches = html.match(regex);
+                if (matches) {
+                    console.log(`Regex ${index + 1} ha trovato ${matches.length} match`);
+                    matches.forEach(match => {
+                        // Pulisci l'URL
+                        let url = match.replace(/src=["']|data-delayed-url=["']|["']/g, '');
+                        
+                        // Verifica che sia un URL valido
+                        if (url.startsWith('http') && !images.some(img => img.url === url)) {
+                            images.push({
+                                url: url,
+                                alt: `Immagine LinkedIn`,
+                                source: `Regex ${index + 1}`
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Anche cerca direttamente negli elementi img se riusciamo a parsare l'HTML
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const imgElements = doc.querySelectorAll('img');
+                console.log(`Trovati ${imgElements.length} elementi img`);
+                
+                imgElements.forEach((img, index) => {
+                    const src = img.src || img.getAttribute('data-delayed-url') || img.getAttribute('data-src');
+                    if (src && src.includes('licdn.com') && !images.some(i => i.url === src)) {
+                        images.push({
+                            url: src,
+                            alt: img.alt || `Immagine ${index + 1}`,
+                            source: 'DOM parsing'
+                        });
+                    }
+                });
+            } catch (e) {
+                console.log('DOM parsing fallito:', e);
+            }
+
+            console.log(`Totale immagini trovate: ${images.length}`);
+            images.forEach((img, i) => console.log(`${i + 1}: ${img.url}`));
+            
+            return images;
+        }
+
+        function showStatus(type, message) {
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        function displayImages(images) {
+            const resultsDiv = document.getElementById('results');
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'images-grid';
+
+            images.forEach((image, index) => {
+                const card = createImageCard(image, index);
+                gridDiv.appendChild(card);
+            });
+
+            resultsDiv.appendChild(gridDiv);
+        }
+
+        function createImageCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+
+            const img = document.createElement('img');
+            img.src = image.url;
+            img.alt = image.alt;
+            img.loading = 'lazy';
+            img.onclick = () => window.open(image.url, '_blank');
+            
+            img.onerror = function() {
+                this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjY2NjIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltbWFnaW5lIG5vbiBjYXJpY2FiaWxlPC90ZXh0Pjwvc3ZnPg==';
+                this.alt = 'Immagine non caricabile (potrebbe richiedere autenticazione)';
+            };
+
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'image-info';
+
+            const urlDiv = document.createElement('div');
+            urlDiv.className = 'image-url';
+            urlDiv.textContent = image.url;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'image-actions';
+
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'download-btn';
+            downloadBtn.textContent = '⬇️ Download';
+            downloadBtn.onclick = () => downloadImage(image.url, `linkedin-image-${index + 1}`);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = '📋 Copia URL';
+            copyBtn.onclick = () => copyToClipboard(image.url);
+
+            const openBtn = document.createElement('button');
+            openBtn.className = 'open-btn';
+            openBtn.textContent = '🔗 Apri';
+            openBtn.onclick = () => window.open(image.url, '_blank');
+
+            actionsDiv.appendChild(downloadBtn);
+            actionsDiv.appendChild(copyBtn);
+            actionsDiv.appendChild(openBtn);
+
+            infoDiv.appendChild(urlDiv);
+            card.appendChild(img);
+            card.appendChild(infoDiv);
+            card.appendChild(actionsDiv);
+
+            return card;
+        }
+
+        async function downloadImage(url, filename) {
+            try {
+                // Prova download diretto
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename + '.jpg';
+                a.target = '_blank';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (error) {
+                // Fallback: apri in nuova finestra
+                window.open(url, '_blank');
+                alert('Download automatico fallito. Si è aperta una nuova finestra - fai clic destro e "Salva immagine come..."');
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('URL copiato negli appunti!');
+            }).catch(() => {
+                // Fallback per browser più vecchi
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                alert('URL copiato negli appunti!');
+            });
+        }
+
+        function showDebugInfo(html) {
+            const resultsDiv = document.getElementById('results');
+            const debugDiv = document.createElement('div');
+            debugDiv.className = 'debug-info';
+            debugDiv.innerHTML = `<strong>Debug - Prime righe HTML:</strong><br><pre>${html.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`;
+            resultsDiv.appendChild(debugDiv);
+        }
+
+        // Permetti di premere Enter per estrarre
+        document.getElementById('linkedinUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                extractImages();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>LinkedIn Image Extractor - Mobile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            min-height: 100vh;
+            padding: 10px;
+            font-size: 16px; /* Evita zoom su iOS */
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0077b5, #004182);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .method-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 8px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .tab.active {
+            background: #0077b5;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        input[type="url"], textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px; /* Evita zoom su iOS */
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="url"]:focus, textarea:focus {
+            outline: none;
+            border-color: #0077b5;
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 14px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #0077b5, #00a0dc);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .images-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .image-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .image-url {
+            font-size: 11px;
+            color: #666;
+            word-break: break-all;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+
+        .image-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .instructions {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+
+        .instructions h4 {
+            color: #1565c0;
+            margin-bottom: 8px;
+        }
+
+        .instructions ol, .instructions ul {
+            padding-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #0077b5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Stili specifici per iOS */
+        @supports (-webkit-touch-callout: none) {
+            input, textarea, button {
+                border-radius: 10px;
+                -webkit-appearance: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📱 LinkedIn Image Extractor</h1>
+            <p>Versione ottimizzata per Safari Mobile</p>
+        </div>
+
+        <div class="main-content">
+            <div class="method-tabs">
+                <button class="tab active" onclick="switchTab('auto')">🔍 Auto</button>
+                <button class="tab" onclick="switchTab('manual')">✋ Manuale</button>
+                <button class="tab" onclick="switchTab('paste')">📋 Incolla</button>
+            </div>
+
+            <!-- Metodo Automatico -->
+            <div id="auto" class="tab-content active">
+                <div class="input-group">
+                    <label for="linkedinUrl">URL del post LinkedIn:</label>
+                    <input 
+                        type="url" 
+                        id="linkedinUrl" 
+                        placeholder="https://www.linkedin.com/posts/..."
+                        value="https://www.linkedin.com/posts/roberto-lambruschi-90877555_se-non-studi-resti-spettatore-la-verit%C3%A0-activity-7370704265952079872-DE0W"
+                    >
+                </div>
+                <button class="btn" onclick="extractImagesAuto()">
+                    🔍 Estrai Automaticamente
+                </button>
+                
+                <div class="instructions">
+                    <h4>⚠️ Limitazioni Safari iOS:</h4>
+                    <ul>
+                        <li>Potrebbero esserci restrizioni CORS</li>
+                        <li>Se non funziona, usa il metodo "Manuale"</li>
+                        <li>Alcuni post privati potrebbero non essere accessibili</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Metodo Manuale -->
+            <div id="manual" class="tab-content">
+                <div class="instructions">
+                    <h4>🛠️ Metodo manuale (più affidabile):</h4>
+                    <ol>
+                        <li>Apri il post LinkedIn in Safari</li>
+                        <li>Tieni premuto su un'area vuota → "Ispeziona elemento"</li>
+                        <li>Vai su Console e incolla questo codice:</li>
+                    </ol>
+                </div>
+                
+                <textarea id="extractScript" readonly>
+// Codice da incollare nella console di Safari
+const images = [];
+document.querySelectorAll('img').forEach((img, i) => {
+    const src = img.src || img.getAttribute('data-delayed-url') || img.getAttribute('data-src');
+    if (src && src.includes('licdn.com')) {
+        images.push({url: src, alt: img.alt || `Immagine ${i+1}`});
+        console.log(`${i+1}: ${src}`);
+    }
+});
+console.log('=== RISULTATI ===');
+console.log(`Trovate ${images.length} immagini`);
+images.forEach((img, i) => console.log(`${i+1}: ${img.url}`));
+// Copia questo output e incollalo nella scheda "Incolla"
+                </textarea>
+                
+                <button class="btn secondary" onclick="copyScript()">
+                    📋 Copia Codice Console
+                </button>
+            </div>
+
+            <!-- Metodo Incolla -->
+            <div id="paste" class="tab-content">
+                <div class="input-group">
+                    <label for="pasteArea">Incolla qui i link delle immagini (uno per riga):</label>
+                    <textarea 
+                        id="pasteArea" 
+                        placeholder="https://media.licdn.com/dms/image/...&#10;https://media.licdn.com/dms/image/...&#10;..."
+                    ></textarea>
+                </div>
+                <button class="btn" onclick="processPastedUrls()">
+                    📋 Processa Link Incollati
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Elaborazione in corso...</p>
+            </div>
+
+            <div class="results" id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Nascondi tutti i contenuti
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostra il contenuto selezionato
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Pulisci i risultati
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function extractImagesAuto() {
+            const url = document.getElementById('linkedinUrl').value.trim();
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+
+            if (!url) {
+                showStatus('error', 'Inserisci un URL valido');
+                return;
+            }
+
+            if (!url.includes('linkedin.com')) {
+                showStatus('error', 'L\'URL deve essere di LinkedIn');
+                return;
+            }
+
+            resultsDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+
+            try {
+                // Prova con allorigins (più compatibile con Safari iOS)
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+                
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+                
+                if (data.contents) {
+                    const images = extractImageUrls(data.contents);
+                    
+                    loadingDiv.style.display = 'none';
+                    
+                    if (images.length > 0) {
+                        showStatus('success', `Trovate ${images.length} immagini!`);
+                        displayImages(images);
+                    } else {
+                        showStatus('info', 'Nessuna immagine trovata. Prova il metodo manuale.');
+                    }
+                } else {
+                    throw new Error('Impossibile accedere al contenuto');
+                }
+
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                console.error('Errore:', error);
+                showStatus('error', 'Metodo automatico fallito. Usa il metodo "Manuale".');
+            }
+        }
+
+        function copyScript() {
+            const script = document.getElementById('extractScript');
+            script.select();
+            script.setSelectionRange(0, 99999); // Per dispositivi mobili
+            
+            try {
+                document.execCommand('copy');
+                showStatus('success', 'Codice copiato! Incollalo nella console di Safari.');
+            } catch (err) {
+                showStatus('error', 'Errore nella copia. Seleziona manualmente il testo.');
+            }
+        }
+
+        function processPastedUrls() {
+            const pasteArea = document.getElementById('pasteArea');
+            const text = pasteArea.value.trim();
+            
+            if (!text) {
+                showStatus('error', 'Incolla i link delle immagini nell\'area di testo');
+                return;
+            }
+            
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            const imageUrls = [];
+            
+            lines.forEach((line, index) => {
+                // Cerca URL di immagini nella riga
+                const urlMatch = line.match(/(https?:\/\/[^\s]+)/);
+                if (urlMatch) {
+                    const url = urlMatch[1];
+                    if (url.includes('licdn.com') || url.match(/\.(jpe?g|png|gif|webp)/i)) {
+                        imageUrls.push({
+                            url: url,
+                            alt: `Immagine ${index + 1}`,
+                            source: 'Incollato manualmente'
+                        });
+                    }
+                }
+            });
+            
+            if (imageUrls.length > 0) {
+                showStatus('success', `Elaborate ${imageUrls.length} immagini!`);
+                displayImages(imageUrls);
+            } else {
+                showStatus('error', 'Nessun link di immagine valido trovato nel testo incollato');
+            }
+        }
+
+        function extractImageUrls(html) {
+            const images = [];
+            const imageRegexes = [
+                /https:\/\/media\.licdn\.com\/dms\/image\/[^"'\s)]+/g,
+                /https:\/\/media-exp\d*\.licdn\.com\/[^"'\s)]+/g,
+                /https:\/\/dms\.licdn\.com\/[^"'\s)]+/g
+            ];
+
+            imageRegexes.forEach((regex, index) => {
+                const matches = html.match(regex);
+                if (matches) {
+                    matches.forEach(url => {
+                        if (!images.some(img => img.url === url)) {
+                            images.push({
+                                url: url,
+                                alt: `Immagine LinkedIn`,
+                                source: `Auto-extract`
+                            });
+                        }
+                    });
+                }
+            });
+
+            return images;
+        }
+
+        function showStatus(type, message) {
+            const resultsDiv = document.getElementById('results');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            resultsDiv.appendChild(statusDiv);
+        }
+
+        function displayImages(images) {
+            const resultsDiv = document.getElementById('results');
+            const gridDiv = document.createElement('div');
+            gridDiv.className = 'images-grid';
+
+            images.forEach((image, index) => {
+                const card = createImageCard(image, index);
+                gridDiv.appendChild(card);
+            });
+
+            resultsDiv.appendChild(gridDiv);
+        }
+
+        function createImageCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'image-card';
+
+            const img = document.createElement('img');
+            img.src = image.url;
+            img.alt = image.alt;
+            img.loading = 'lazy';
+            img.onclick = () => {
+                // Su iOS, apri l'immagine in una nuova finestra per la visualizzazione completa
+                window.open(image.url, '_blank');
+            };
+            
+            img.onerror = function() {
+                this.style.display = 'none';
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'padding:20px;text-align:center;color:#666;background:#f0f0f0;border-radius:8px;';
+                errorDiv.textContent = '❌ Immagine non caricabile';
+                this.parentNode.insertBefore(errorDiv, this);
+            };
+
+            const urlDiv = document.createElement('div');
+            urlDiv.className = 'image-url';
+            urlDiv.textContent = image.url;
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'image-actions';
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'action-btn copy-btn';
+            copyBtn.textContent = '📋 Copia';
+            copyBtn.onclick = () => copyToClipboard(image.url);
+
+            const openBtn = document.createElement('button');
+            openBtn.className = 'action-btn download-btn';
+            openBtn.textContent = '🔗 Apri';
+            openBtn.onclick = () => window.open(image.url, '_blank');
+
+            actionsDiv.appendChild(copyBtn);
+            actionsDiv.appendChild(openBtn);
+
+            card.appendChild(img);
+            card.appendChild(urlDiv);
+            card.appendChild(actionsDiv);
+
+            return card;
+        }
+
+        function copyToClipboard(text) {
+            // Metodo ottimizzato per iOS Safari
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showStatus('success', 'URL copiato!');
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showStatus('success', 'URL copiato!');
+            } catch (err) {
+                showStatus('error', 'Copia manuale necessaria');
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        // Gestione touch per iOS
+        document.addEventListener('touchstart', function() {}, true);
+    </script>
+</body>
+</html>

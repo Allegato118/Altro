@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enhanced Media Extractor V2.2</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif; background:linear-gradient(135deg,#0077b5,#00a0dc); min-height:100vh; padding:20px; }
+    .container { max-width:1200px; margin:0 auto; background:#fff; border-radius:15px; box-shadow:0 20px 40px rgba(0,0,0,.1); overflow:hidden; }
+    .header { background:linear-gradient(135deg,#0077b5,#004182); color:#fff; padding:30px; text-align:center; }
+    .header h1 { font-size:2.5em; margin-bottom:10px; font-weight:300; }
+    .header p { opacity:.9; font-size:1.1em; }
+    .main-content { padding:40px; }
+    .input-section { margin-bottom:40px; }
+    .input-group { display:flex; gap:15px; margin-bottom:20px; }
+    .controls-row { display:flex; gap:15px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+    .filter-group, .proxy-group { display:flex; align-items:center; gap:10px; }
+    .filter-group label, .proxy-group label { font-weight:600; color:#333; white-space:nowrap; }
+    input[type=url] { flex:1; padding:15px 20px; border:2px solid #e1e5e9; border-radius:10px; font-size:16px; transition:.3s; }
+    input[type=url]:focus { outline:none; border-color:#0077b5; box-shadow:0 0 0 3px rgba(0,119,181,.1); }
+    select { padding:10px 15px; border:2px solid #e1e5e9; border-radius:8px; font-size:14px; background:#fff; cursor:pointer; }
+    select:focus { outline:none; border-color:#0077b5; }
+    .filter-checkboxes { display:flex; gap:15px; flex-wrap:wrap; }
+    .checkbox-item { display:flex; align-items:center; gap:5px; }
+    .checkbox-item input[type=checkbox] { margin:0; }
+    .checkbox-item label { font-weight:normal; margin:0; cursor:pointer; }
+    .extract-btn { background:linear-gradient(135deg,#0077b5,#00a0dc); color:#fff; border:none; padding:15px 30px; border-radius:10px; font-size:16px; font-weight:600; cursor:pointer; transition:.3s; white-space:nowrap; }
+    .extract-btn:hover { transform:translateY(-2px); box-shadow:0 10px 20px rgba(0,119,181,.3); }
+    .extract-btn:disabled { background:#ccc; cursor:not-allowed; }
+    .loading { display:none; text-align:center; padding:20px; }
+    .spinner { width:50px; height:50px; border:5px solid #f3f3f3; border-top:5px solid #0077b5; border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 20px; }
+    @keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+    .results { margin-top:30px; }
+    .status { padding:15px; border-radius:10px; margin-bottom:20px; font-weight:500; }
+    .status.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .status.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    .status.info { background:#d1ecf1; color:#0c5460; border:1px solid #bee5eb; }
+    .images-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; margin-top:20px; }
+    .image-card { background:#f8f9fa; border-radius:15px; padding:20px; box-shadow:0 5px 15px rgba(0,0,0,.1); transition:.3s; }
+    .image-card:hover { transform:translateY(-5px); }
+    .image-card img, .image-card video { width:100%; height:200px; object-fit:cover; border-radius:10px; margin-bottom:15px; cursor:pointer; background:#e9ecef; }
+    .image-info { margin-bottom:15px; }
+    .image-url { font-size:.8em; color:#666; word-break:break-all; margin-bottom:10px; padding:10px; background:#f0f0f0; border-radius:5px; }
+    .image-actions { display:flex; gap:10px; }
+    .download-btn, .copy-btn, .open-btn { flex:1; border:none; padding:8px 12px; border-radius:6px; font-size:12px; cursor:pointer; }
+    .download-btn { background:#28a745; color:#fff; }
+    .download-btn:hover { background:#218838; }
+    .copy-btn { background:#6c757d; color:#fff; }
+    .copy-btn:hover { background:#5a6268; }
+    .open-btn { background:#007bff; color:#fff; }
+    .open-btn:hover { background:#0056b3; }
+    .debug-info { background:#f8f9fa; border-radius:10px; padding:20px; margin-top:20px; font-family:monospace; font-size:.9em; max-height:300px; overflow-y:auto; }
+    .note { font-size:.8em; margin-top:6px; }
+    .note.warn { color:#b02a37; }
+    .media-type-badge { font-size:.7em; background:#007bff; color:#fff; padding:2px 6px; border-radius:3px; margin-left:5px; }
+    @media (max-width:768px){ .input-group, .controls-row{flex-direction:column;} .header h1{font-size:2em;} .main-content{padding:20px;} .images-grid{grid-template-columns:1fr;} .filter-checkboxes{justify-content:center;} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🖼️ Enhanced Media Extractor V2.2</h1>
+      <p>Estrai media da qualsiasi sito web con controlli avanzati e diagnostica errori</p>
+    </div>
+    <div class="main-content">
+      <div class="input-section">
+        <div class="input-group">
+          <input type="url" id="siteUrl" placeholder="Incolla qui l'URL del sito web..." />
+          <button class="extract-btn" onclick="extractImages()">Scansiona Sito</button>
+        </div>
+        
+        <div class="controls-row">
+          <div class="proxy-group">
+            <label for="proxySelect">Proxy:</label>
+            <select id="proxySelect">
+              <option value="auto">Auto (prova tutti)</option>
+              <option value="https://api.allorigins.win/raw?url=">AllOrigins</option>
+              <option value="https://corsproxy.io/?">CorsProxy</option>
+              <option value="https://cors-anywhere.herokuapp.com/">Cors Anywhere</option>
+              <option value="https://thingproxy.freeboard.io/fetch/">ThingProxy</option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>Filtri Media:</label>
+            <div class="filter-checkboxes">
+              <div class="checkbox-item">
+                <input type="checkbox" id="filterImg" checked>
+                <label for="filterImg">Immagini</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="filterVideo" checked>
+                <label for="filterVideo">Video</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="filterAudio" checked>
+                <label for="filterAudio">Audio</label>
+              </div>
+              <div class="checkbox-item">
+                <input type="checkbox" id="filterDoc" checked>
+                <label for="filterDoc">Documenti</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Scansionando il sito web...</p>
+      </div>
+      <div class="results" id="results"></div>
+    </div>
+  </div>
+
+  <script>
+    const probeCache = new Map();
+
+    function getFallbackDataUrl(){
+      const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='#cccccc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='#666666' font-size='14'>Media non disponibile</text></svg>";
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    async function probeUrl(url){
+      if (probeCache.has(url)) return probeCache.get(url);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const resp = await fetch(url, { method:'HEAD', cache:'no-store', redirect:'follow', signal: controller.signal });
+        clearTimeout(timeout);
+        const info = { status: resp.status, statusText: resp.statusText || '', errorMessage: '' };
+        probeCache.set(url, info);
+        return info;
+      } catch (e) {
+        clearTimeout(timeout);
+        const info = { status: 0, statusText: '', errorMessage: e.message || 'Network error' };
+        probeCache.set(url, info);
+        return info;
+      }
+    }
+
+    function getActiveFilters(){
+      return {
+        images: document.getElementById('filterImg').checked,
+        videos: document.getElementById('filterVideo').checked,
+        audio: document.getElementById('filterAudio').checked,
+        documents: document.getElementById('filterDoc').checked
+      };
+    }
+
+    function getMediaType(url){
+      const u = url.toLowerCase();
+      if (/\.(jpe?g|png|gif|webp|svg|bmp|tiff?)(\?|$)/i.test(u)) return 'image';
+      if (/\.(mp4|mov|avi|mkv|webm|m4v|3gp|flv)(\?|$)/i.test(u)) return 'video';
+      if (/\.(mp3|wav|ogg|m4a|aac|flac)(\?|$)/i.test(u)) return 'audio';
+      if (/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf)(\?|$)/i.test(u)) return 'document';
+      return 'unknown';
+    }
+
+    function shouldIncludeMedia(url, filters){
+      const type = getMediaType(url);
+      switch(type){
+        case 'image': return filters.images;
+        case 'video': return filters.videos;
+        case 'audio': return filters.audio;
+        case 'document': return filters.documents;
+        default: return filters.images; // fallback per unknown
+      }
+    }
+
+    async function extractImages(){
+      const url = document.getElementById('siteUrl').value.trim();
+      const selectedProxy = document.getElementById('proxySelect').value;
+      const filters = getActiveFilters();
+      const loadingDiv = document.getElementById('loading');
+      const resultsDiv = document.getElementById('results');
+      const extractBtn = document.querySelector('.extract-btn');
+      
+      if (!url){ showStatus('error','Per favore inserisci un URL valido'); return; }
+      
+      resultsDiv.innerHTML = '';
+      loadingDiv.style.display = 'block';
+      extractBtn.disabled = true; 
+      extractBtn.textContent = 'Scansionando...';
+      
+      try {
+        const proxies = selectedProxy === 'auto' ? [
+          'https://api.allorigins.win/raw?url=',
+          'https://corsproxy.io/?',
+          'https://cors-anywhere.herokuapp.com/',
+          'https://thingproxy.freeboard.io/fetch/'
+        ] : [selectedProxy];
+
+        let html = null, usedProxy = null;
+        for (const proxy of proxies){
+          try {
+            const res = await fetch(proxy + encodeURIComponent(url), { 
+              headers: { 'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' } 
+            });
+            if (res.ok){ 
+              html = await res.text(); 
+              usedProxy = proxy; 
+              break; 
+            }
+          } catch(_) { /* try next */ }
+        }
+        
+        if (!html) throw new Error('Impossibile accedere al sito. Tutti i proxy hanno fallito.');
+        
+        const media = extractMedia(html, url, filters);
+        
+        loadingDiv.style.display = 'none';
+        extractBtn.disabled = false; 
+        extractBtn.textContent = 'Scansiona Sito';
+        
+        if (media.length){ 
+          showStatus('success', `Trovati ${media.length} media nel sito! (Proxy: ${usedProxy.split('?')[0].split('/').pop()})`); 
+          displayImages(media); 
+        } else { 
+          showStatus('info','Nessun media trovato con i filtri selezionati.'); 
+          showDebugInfo(html.substring(0,2000)+'...'); 
+        }
+      } catch (err){
+        loadingDiv.style.display = 'none';
+        extractBtn.disabled = false; 
+        extractBtn.textContent = 'Scansiona Sito';
+        showStatus('error', `Errore: ${err.message}`);
+      }
+    }
+
+    function extractMedia(html, baseUrl, filters){
+      const media = [], seen = new Set();
+      
+      // Regex patterns estesi per tutti i tipi di media
+      const mediaRegexes = [
+        // LinkedIn specifiche
+        /https:\/\/media\.licdn\.com\/dms\/image\/[^"'\s)]+/gi,
+        /https:\/\/media-exp\d*\.licdn\.com\/[^"'\s)]+/gi,
+        /https:\/\/dms\.licdn\.com\/[^"'\s)]+/gi,
+        /https:\/\/static-exp\d*\.licdn\.com\/[^"'\s)]+/gi,
+        // Immagini standard
+        /https?:\/\/[^"'\s)]*\.(?:jpe?g|png|gif|webp|svg|bmp|tiff?)(?:\?[^"'\s)]*)?/gi,
+        // Video
+        /https?:\/\/[^"'\s)]*\.(?:mp4|mov|avi|mkv|webm|m4v|3gp|flv)(?:\?[^"'\s)]*)?/gi,
+        // Audio
+        /https?:\/\/[^"'\s)]*\.(?:mp3|wav|ogg|m4a|aac|flac)(?:\?[^"'\s)]*)?/gi,
+        // Documenti
+        /https?:\/\/[^"'\s)]*\.(?:pdf|doc|docx|xls|xlsx|ppt|pptx|txt|rtf)(?:\?[^"'\s)]*)?/gi,
+        // CDN specifici
+        /https:\/\/[^"'\s)]*\.googleapis\.com\/[^"'\s)]+/gi,
+        /https:\/\/[^"'\s)]*\.cloudfront\.net\/[^"'\s)]+/gi,
+        // Attributi HTML
+        /src=["']([^"']*(?:jpe?g|png|gif|webp|mp4|mov|mp3|wav|pdf)[^"']*)["']/gi,
+        /href=["']([^"']*\.(?:pdf|doc|docx|xls|xlsx|ppt|pptx)[^"']*)["']/gi,
+        /data-(?:src|background-image|delayed-url)=["']([^"']+)["']/gi,
+        /background-image:\s*url\((['"]?)([^'")]+)\1\)/gi
+      ];
+
+      // Estrazione via regex
+      mediaRegexes.forEach((re, i) => {
+        let match;
+        while ((match = re.exec(html)) !== null) {
+          const url = match[1] || match[2] || match[0];
+          if (url && url.startsWith('http') && !seen.has(url) && shouldIncludeMedia(url, filters)) {
+            seen.add(url);
+            media.push({
+              url,
+              alt: `Media Regex ${i + 1}`,
+              source: `Regex ${i + 1}`,
+              type: getMediaType(url)
+            });
+          }
+        }
+      });
+
+      // Esplorazione DOM avanzata
+      try {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        
+        // Immagini dal DOM
+        if (filters.images) {
+          doc.querySelectorAll('img, [style*="background-image"]').forEach((el, i) => {
+            const sources = [
+              el.src, el.getAttribute('data-src'), el.getAttribute('data-lazy-src'),
+              el.getAttribute('data-delayed-url'), el.getAttribute('srcset')?.split(' ')[0]
+            ];
+            
+            // Background images
+            const style = el.getAttribute('style') || '';
+            const bgMatch = style.match(/background-image:\s*url\(['"]?([^'")]+)['"]?\)/);
+            if (bgMatch) sources.push(bgMatch[1]);
+            
+            sources.forEach(src => {
+              if (src && src.startsWith('http') && !seen.has(src)) {
+                seen.add(src);
+                media.push({
+                  url: src,
+                  alt: el.alt || `Immagine DOM ${i + 1}`,
+                  source: 'DOM IMG',
+                  type: 'image'
+                });
+              }
+            });
+          });
+        }
+
+        // Video dal DOM
+        if (filters.videos) {
+          doc.querySelectorAll('video, source').forEach((el, i) => {
+            const src = el.src || el.getAttribute('data-src');
+            const poster = el.getAttribute('poster');
+            
+            [src, poster].forEach(url => {
+              if (url && url.startsWith('http') && !seen.has(url)) {
+                seen.add(url);
+                media.push({
+                  url,
+                  alt: `Video DOM ${i + 1}`,
+                  source: 'DOM VIDEO',
+                  type: getMediaType(url)
+                });
+              }
+            });
+          });
+        }
+
+        // Audio dal DOM
+        if (filters.audio) {
+          doc.querySelectorAll('audio, source[type^="audio"]').forEach((el, i) => {
+            const src = el.src || el.getAttribute('data-src');
+            if (src && src.startsWith('http') && !seen.has(src)) {
+              seen.add(src);
+              media.push({
+                url: src,
+                alt: `Audio DOM ${i + 1}`,
+                source: 'DOM AUDIO',
+                type: 'audio'
+              });
+            }
+          });
+        }
+
+        // Documenti dal DOM
+        if (filters.documents) {
+          doc.querySelectorAll('a[href*=".pdf"], a[href*=".doc"], a[href*=".xls"], a[href*=".ppt"], embed, object').forEach((el, i) => {
+            const href = el.href || el.getAttribute('data') || el.getAttribute('src');
+            if (href && href.startsWith('http') && !seen.has(href) && shouldIncludeMedia(href, filters)) {
+              seen.add(href);
+              media.push({
+                url: href,
+                alt: el.textContent?.trim() || `Documento DOM ${i + 1}`,
+                source: 'DOM LINK',
+                type: getMediaType(href)
+              });
+            }
+          });
+        }
+
+      } catch (e) {
+        console.log('DOM parse failed:', e);
+      }
+
+      return media;
+    }
+
+    function showStatus(type, msg) {
+      const div = document.createElement('div');
+      div.className = `status ${type}`;
+      div.textContent = msg;
+      document.getElementById('results').appendChild(div);
+    }
+
+    function displayImages(images) {
+      const grid = document.createElement('div');
+      grid.className = 'images-grid';
+      images.forEach((m, i) => grid.appendChild(createCard(m, i)));
+      document.getElementById('results').appendChild(grid);
+    }
+
+    function noteForProbe(info, url) {
+      const div = document.createElement('div');
+      div.className = 'note warn';
+      if (info.status) {
+        div.textContent = `Errore HTTP ${info.status} ${info.statusText ? '(' + info.statusText + ')' : ''}`;
+      } else {
+        div.textContent = `Errore di rete/CORS: ${info.errorMessage || 'Failed to fetch'}`;
+      }
+      return div;
+    }
+
+    function attachErrorDiagnostics(mediaEl, cardEl, url) {
+      const FALLBACK = getFallbackDataUrl();
+      let handled = false;
+      
+      mediaEl.onerror = async function() {
+        if (handled) return;
+        handled = true;
+        mediaEl.onerror = null;
+        
+        if (mediaEl.tagName === 'IMG') mediaEl.src = FALLBACK;
+        else if (mediaEl.tagName === 'VIDEO') mediaEl.poster = FALLBACK;
+        
+        if (!cardEl.dataset.probed) {
+          cardEl.dataset.probed = '1';
+          const info = await probeUrl(url);
+          cardEl.appendChild(noteForProbe(info, url));
+        }
+      };
+    }
+
+    function createCard(m, i) {
+      const card = document.createElement('div');
+      card.className = 'image-card';
+      
+      let mediaEl;
+      const type = m.type || getMediaType(m.url);
+      
+      // Creazione elemento media appropriato
+      if (type === 'video' || /\.(mp4|mov|avi|mkv|webm)(\?|$)/i.test(m.url)) {
+        mediaEl = document.createElement('video');
+        mediaEl.src = m.url;
+        mediaEl.controls = true;
+        attachErrorDiagnostics(mediaEl, card, m.url);
+      } else if (type === 'audio' || /\.(mp3|wav|ogg|m4a|aac)(\?|$)/i.test(m.url)) {
+        mediaEl = document.createElement('audio');
+        mediaEl.src = m.url;
+        mediaEl.controls = true;
+        mediaEl.style.width = '100%';
+        mediaEl.style.height = '60px';
+      } else {
+        mediaEl = document.createElement('img');
+        mediaEl.src = m.url;
+        attachErrorDiagnostics(mediaEl, card, m.url);
+      }
+      
+      card.appendChild(mediaEl);
+
+      // Info section
+      const info = document.createElement('div');
+      info.className = 'image-info';
+      
+      const urlDiv = document.createElement('div');
+      urlDiv.className = 'image-url';
+      urlDiv.innerHTML = m.url + `<span class="media-type-badge">${type.toUpperCase()}</span>`;
+      
+      info.appendChild(urlDiv);
+      card.appendChild(info);
+
+      // Actions
+      const actions = document.createElement('div');
+      actions.className = 'image-actions';
+      
+      const downloadBtn = document.createElement('button');
+      downloadBtn.className = 'download-btn';
+      downloadBtn.textContent = '⬇️ Download';
+      downloadBtn.onclick = () => downloadImage(m.url, `media-${type}-${i + 1}`);
+      
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-btn';
+      copyBtn.textContent = '📋 Copia URL';
+      copyBtn.onclick = () => copyToClipboard(m.url);
+      
+      const openBtn = document.createElement('button');
+      openBtn.className = 'open-btn';
+      openBtn.textContent = '🔗 Apri';
+      openBtn.onclick = () => window.open(m.url, '_blank');
+      
+      actions.appendChild(downloadBtn);
+      actions.appendChild(copyBtn);
+      actions.appendChild(openBtn);
+      card.appendChild(actions);
+      
+      return card;
+    }
+
+    async function downloadImage(url, filename) {
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (_) {
+        window.open(url, '_blank');
+      }
+    }
+
+    function copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => alert('URL copiato!')).catch(() => {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('URL copiato!');
+      });
+    }
+
+    function showDebugInfo(html) {
+      const div = document.createElement('div');
+      div.className = 'debug-info';
+      div.innerHTML = '<strong>Debug HTML:</strong><br><pre>' + html.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>';
+      document.getElementById('results').appendChild(div);
+    }
+
+    // Event listeners
+    document.getElementById('siteUrl').addEventListener('keypress', e => {
+      if (e.key === 'Enter') extractImages();
+    });
+  </script>
+</body>
+</html>

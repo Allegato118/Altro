@@ -8,3 +8,5 @@
 # Più potenti
 - <a href="https://allegato118.github.io/Altro/linkedin_image_extractor_v_2.1_OK.html" target="_blank">Estrai Media 2.1</a>
 - <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_V3.1.html" target="_blank">Estrai Media 3.1</a>
+- <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_carousel V3.2.2.html" target="_blank">Estrai Media 3.2.2</a>
+- <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_V3.3_noproxy.html" target="_blank">Estrai Media 3.3</a>

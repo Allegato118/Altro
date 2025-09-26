@@ -10,3 +10,5 @@
 - <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_V3.1.html" target="_blank">Estrai Media 3.1</a>
 - <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_carousel V3.2.2.html" target="_blank">Estrai Media 3.2.2</a>
 - <a href="https://allegato118.github.io/Altro/enhanced_media_extractor_V3.3_noproxy.html" target="_blank">Estrai Media 3.3</a>
+
+- <a href="https://allegato118.github.io/Altro/enhanced_media_extractor2.html" target="_blank">🚀 Enhanced Media Extractor V5.0 - POTENZIATO</a>

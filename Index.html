@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enhanced Media Extractor V5.0 - Potenziato</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🚀 Enhanced Media Extractor V5.0 - POTENZIATO</h1>
+      <p>Estrazione massiva di contenuti media con algoritmi avanzati e multi-pattern</p>
+    </div>
+
+    <div class="main-content">
+      <!-- NUOVA SEZIONE: ANALISI MIRATA LINKEDIN -->
+      <div class="input-section">
+        <div class="advanced-filters">
+          <h4>🎯 ANALISI MIRATA LINKEDIN MANIFEST</h4>
+          <div class="filter-row">
+            <textarea 
+              id="linkedinManifests" 
+              placeholder="Incolla qui i link dei manifest LinkedIn (uno per riga):
+https://media.licdn.com/dms/document/pl/v2/D4E1FAQGQ_tvcFZ2TWg/feedshare-document-master-manifest/B4EZl7f8tAHEBc-/0/1758713626843?e=2147483647&v=beta&t=ekSAUGtTybbIEwhsIS0-XelTmKuACC9B3d8plji-2_I
+https://media.licdn.com/dms/document/pl/v2/D561FAQHZzlS4nEw12w/feedshare-document-master-manifest/B56ZmF4FvYI4Bc-/0/1758887704338?e=2147483647&v=beta&t=1isgS5ta8vN87h5UYMDQ3FMOaiddrCJomIId8WQpnSg"
+              rows="6"
+              style="width: 100%; padding: 15px; border: 2px solid #e1e5e9; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 12px;"
+            ></textarea>
+          </div>
+          <div class="filter-row">
+            <button class="extract-btn" onclick="analyzeLinkedInManifests()" style="background: linear-gradient(135deg,#28a745,#20c997);">
+              🔍 Analizza Manifest LinkedIn
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-section">
+        <div class="input-group">
+          <input type="url" id="siteUrl" placeholder="Incolla qui l'URL del sito web..." />
+          <button class="clean-btn" id="cleanUrlBtn">🧹 Pulisci URL</button>
+          <button class="extract-btn" id="extractBtn">🔍 Analizza Sito</button>
+        </div>
+
+        <div class="log-panel" id="logPanel">Log Panel V5.0 - Sistema di estrazione potenziato pronto</div>
+
+        <div class="advanced-filters">
+          <h4>🎯 Filtri Avanzati e Modalità di Estrazione</h4>
+          <div class="filter-row">
+            <div class="proxy-group">
+              <label for="proxySelect">Proxy:</label>
+              <select id="proxySelect">
+                <option value="auto">🔄 Auto (ricerca intelligente)</option>
+                <option value="noproxy">🚀 NoProxy (Accesso Diretto)</option>
+                <option value="corsproxy">🌐 CorsProxy</option>
+                <option value="allorigins">🔗 AllOrigins</option>
+              </select>
+              <div class="proxy-status" id="proxyStatus"></div>
+            </div>
+
+            <div class="carousel-group">
+              <div class="checkbox-item">
+                <input type="checkbox" id="carouselMode" checked>
+                <label for="carouselMode">🎠 Modalità Carosello</label>
+              </div>
+            </div>
+
+            <div class="checkbox-item">
+              <input type="checkbox" id="deepExtraction" checked>
+              <label for="deepExtraction">⚡ Estrazione Intensiva</label>
+            </div>
+
+            <div class="checkbox-item">
+              <input type="checkbox" id="backgroundImages" checked>
+              <label for="backgroundImages">🖼️ Background Images</label>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Tipi Media:</label>
+              <div class="filter-checkboxes">
+                <div class="checkbox-item">
+                  <input type="checkbox" id="filterImg" checked>
+                  <label for="filterImg">📷 Immagini</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="filterVideo" checked>
+                  <label for="filterVideo">🎥 Video</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="filterAudio" checked>
+                  <label for="filterAudio">🎵 Audio</label>
+                </div>
+                <div class="checkbox-item">
+                  <input type="checkbox" id="filterDoc" checked>
+                  <label for="filterDoc">📄 Documenti</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-row">
+            <label>Dimensione minima (px):</label>
+            <input type="number" class="filter-input" id="minSize" value="50" min="0" max="5000">
+            <label>Modalità estrazione:</label>
+            <select class="filter-input" id="extractionMode">
+              <option value="aggressive">🔥 Aggressiva (Max contenuti)</option>
+              <option value="standard">⚡ Standard</option>
+              <option value="conservative">🛡️ Conservativa</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p id="loadingText">Estrazione intensiva in corso...</p>
+      </div>
+
+      <div class="tabs-container" id="tabsContainer" style="display:none;">
+        <div class="tabs-nav">
+          <button class="tab-btn active" data-tab="media">📸 Media Trovati</button>
+          <button class="tab-btn" data-tab="javascript">⚙️ Analisi JavaScript</button>
+          <button class="tab-btn" data-tab="stats">📊 Statistiche Dettagliate</button>
+        </div>
+
+        <div class="tab-content active" id="mediaTab">
+          <div id="mediaResults"></div>
+        </div>
+
+        <div class="tab-content" id="javascriptTab">
+          <div id="jsResults"></div>
+        </div>
+
+        <div class="tab-content" id="statsTab">
+          <div id="statsResults"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+  <script>
+  // FUNZIONE SEMPLICE PER ANALIZZARE MANIFEST LINKEDIN
+  async function analyzeLinkedInManifests() {
+    const textarea = document.getElementById('linkedinManifests');
+    const logPanel = document.getElementById('logPanel');
+    const loadingDiv = document.getElementById('loading');
+    const proxySelect = document.getElementById('proxySelect').value;
+    
+    if (!textarea.value.trim()) {
+      alert('Incolla prima i link dei manifest LinkedIn!');
+      return;
+    }
+
+    loadingDiv.style.display = 'block';
+    logPanel.innerHTML = '🚀 Avvio analisi manifest LinkedIn...<br>';
+
+    const urls = textarea.value.split('\n').filter(url => url.trim().startsWith('http'));
+    
+    let allMedia = [];
+    
+    for (const manifestUrl of urls) {
+      try {
+        logPanel.innerHTML += `<div class="log-info">📦 Analisi: ${manifestUrl}</div>`;
+        
+        // Scarica il JSON del manifest
+        const response = await fetchWithProxy(manifestUrl, proxySelect);
+        const jsonData = await response.json();
+        
+        // Estrai tutti i media dal JSON
+        const mediaFromManifest = extractMediaFromLinkedInJSON(jsonData, manifestUrl);
+        allMedia = [...allMedia, ...mediaFromManifest];
+        
+        logPanel.innerHTML += `<div class="log-success">✅ Trovati ${mediaFromManifest.length} media</div>`;
+        
+      } catch (error) {
+        logPanel.innerHTML += `<div class="log-error">❌ Errore: ${error.message}</div>`;
+      }
+    }
+
+    loadingDiv.style.display = 'none';
+    
+    if (allMedia.length > 0) {
+      displayLinkedInResults(allMedia);
+      logPanel.innerHTML += `<div class="log-success">🎉 ANALISI COMPLETATA: ${allMedia.length} media trovati totali!</div>`;
+    } else {
+      logPanel.innerHTML += `<div class="log-warning">⚠️ Nessun media trovato nei manifest</div>`;
+    }
+  }
+
+  // Funzione per fetch con proxy
+  async function fetchWithProxy(url, proxySelect) {
+    let proxyUrl = url;
+    
+    if (proxySelect === 'corsproxy') {
+      proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    } else if (proxySelect === 'allorigins') {
+      proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    }
+    // Altri proxy possono essere aggiunti qui
+    
+    return fetch(proxyUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json, */*'
+      }
+    });
+  }
+
+  // Funzione per estrarre media dal JSON LinkedIn
+  function extractMediaFromLinkedInJSON(jsonData, sourceUrl) {
+    const media = [];
+    const seen = new Set();
+
+    function searchInObject(obj, path = '') {
+      if (!obj || typeof obj !== 'object') return;
+
+      for (const [key, value] of Object.entries(obj)) {
+        const currentPath = path ? `${path}.${key}` : key;
+        
+        if (typeof value === 'string' && value.startsWith('http')) {
+          // Cerca URL media LinkedIn
+          if (isLinkedInMediaUrl(value) && !seen.has(value)) {
+            seen.add(value);
+            const type = getMediaType(value);
+            media.push({
+              url: value,
+              alt: `LinkedIn: ${currentPath}`,
+              source: `LinkedIn Manifest (${sourceUrl})`,
+              type: type,
+              isCarousel: false,
+              fromManifest: true
+            });
+          }
+        } else if (typeof value === 'object') {
+          searchInObject(value, currentPath);
+        } else if (Array.isArray(value)) {
+          value.forEach((item, index) => {
+            if (typeof item === 'object') {
+              searchInObject(item, `${currentPath}[${index}]`);
+            }
+          });
+        }
+      }
+    }
+
+    // Cerca nelle proprietà specifiche
+    const targetProps = ['transcriptManifestUrl', 'transcribedDocumentUrl', 'documentUrl', 'pdfUrl', 'transcriptUrl'];
+    targetProps.forEach(prop => {
+      if (jsonData[prop] && typeof jsonData[prop] === 'string' && isLinkedInMediaUrl(jsonData[prop]) && !seen.has(jsonData[prop])) {
+        seen.add(jsonData[prop]);
+        const type = getMediaType(jsonData[prop]);
+        media.push({
+          url: jsonData[prop],
+          alt: `LinkedIn: ${prop}`,
+          source: `LinkedIn Property (${sourceUrl})`,
+          type: type,
+          isCarousel: false,
+          fromManifest: true
+        });
+      }
+    });
+
+    // Ricerca generale nell'oggetto
+    searchInObject(jsonData);
+
+    return media;
+  }
+
+  // Funzione per riconoscere URL media LinkedIn
+  function isLinkedInMediaUrl(url) {
+    return url.includes('media.licdn.com/dms/') && (
+      url.includes('feedshare-document-transcript') ||
+      url.includes('feedshare-document-pdf-analyzed') ||
+      url.includes('.pdf') ||
+      url.includes('transcript') ||
+      url.includes('/image/') ||
+      url.includes('/video/')
+    );
+  }
+
+  // Funzione per determinare il tipo di media
+  function getMediaType(url) {
+    if (url.includes('.pdf')) return 'document';
+    if (url.includes('transcript')) return 'document';
+    if (url.includes('/image/')) return 'image';
+    if (url.includes('/video/')) return 'video';
+    return 'document';
+  }
+
+  // Funzione per mostrare i risultati
+  function displayLinkedInResults(mediaList) {
+    const container = document.getElementById('mediaResults');
+    const tabsContainer = document.getElementById('tabsContainer');
+    
+    container.innerHTML = '';
+    tabsContainer.style.display = 'block';
+    
+    // Crea gruppo LinkedIn
+    const groupDiv = document.createElement('div');
+    groupDiv.className = 'media-group';
+    
+    const header = document.createElement('div');
+    header.className = 'group-header';
+    header.innerHTML = `<span>📁 LinkedIn Manifest (${mediaList.length} elementi)</span>`;
+    
+    const content = document.createElement('div');
+    content.className = 'group-content media-grid';
+    
+    mediaList.forEach((item, i) => {
+      content.appendChild(createMediaCard(item, i));
+    });
+    
+    groupDiv.appendChild(header);
+    groupDiv.appendChild(content);
+    container.appendChild(groupDiv);
+    
+    // Mostra statistiche
+    displayLinkedInStats(mediaList);
+  }
+
+  // Funzione per creare card media (semplificata)
+  function createMediaCard(media, index) {
+    const card = document.createElement('div');
+    card.className = 'media-card';
+    
+    const badge = document.createElement('div');
+    badge.className = 'carousel-badge';
+    badge.style.background = 'linear-gradient(135deg,#28a745,#20c997)';
+    badge.textContent = 'LINKEDIN';
+    card.appendChild(badge);
+    
+    const info = document.createElement('div');
+    info.className = 'media-info';
+    
+    const urlDiv = document.createElement('div');
+    urlDiv.className = 'media-url';
+    urlDiv.innerHTML = `${media.url}<span class="type-badge type-${media.type}">${media.type.toUpperCase()}</span>`;
+    
+    if (media.source) {
+      const source = document.createElement('div');
+      source.className = 'media-source';
+      source.textContent = `Fonte: ${media.source}`;
+      urlDiv.appendChild(source);
+    }
+    
+    info.appendChild(urlDiv);
+    card.appendChild(info);
+    
+    const actions = document.createElement('div');
+    actions.className = 'media-actions';
+    
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'action-btn download-btn';
+    downloadBtn.innerHTML = '⬇️ Download';
+    downloadBtn.onclick = () => {
+      const a = document.createElement('a');
+      a.href = media.url;
+      a.download = `linkedin-${media.type}-${index + 1}`;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    };
+    
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'action-btn copy-btn';
+    copyBtn.innerHTML = '📋 Copia';
+    copyBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(media.url);
+        copyBtn.innerHTML = '✅ Copiato';
+        setTimeout(() => copyBtn.innerHTML = '📋 Copia', 2000);
+      } catch {
+        copyBtn.innerHTML = '❌ Errore';
+        setTimeout(() => copyBtn.innerHTML = '📋 Copia', 2000);
+      }
+    };
+    
+    const openBtn = document.createElement('button');
+    openBtn.className = 'action-btn open-btn';
+    openBtn.innerHTML = '🔗 Apri';
+    openBtn.onclick = () => window.open(media.url, '_blank');
+    
+    actions.appendChild(downloadBtn);
+    actions.appendChild(copyBtn);
+    actions.appendChild(openBtn);
+    card.appendChild(actions);
+    
+    return card;
+  }
+
+  // Funzione per statistiche
+  function displayLinkedInStats(mediaList) {
+    const container = document.getElementById('statsResults');
+    
+    const types = {};
+    mediaList.forEach(media => {
+      types[media.type] = (types[media.type] || 0) + 1;
+    });
+    
+    container.innerHTML = `
+      <div class="stats-dashboard">
+        <div class="stat-card">
+          <div class="stat-number">${mediaList.length}</div>
+          <div class="stat-label">Media Totali</div>
+        </div>
+        ${Object.entries(types).map(([type, count]) => `
+          <div class="stat-card">
+            <div class="stat-number">${count}</div>
+            <div class="stat-label">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="js-analysis">
+        <h4>📋 Dettagli Estrazione LinkedIn</h4>
+        <p><strong>🎯 Tipo analisi:</strong> Manifest LinkedIn mirata</p>
+        <p><strong>🔍 Contenuti estratti:</strong> PDF, Trascrizioni, Documenti, Immagini</p>
+        <p><strong>📊 Risultati:</strong> ${mediaList.length} media trovati</p>
+      </div>
+    `;
+  }
+  </script>
+</body>
+</html>

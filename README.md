@@ -13,4 +13,4 @@
 
 - <a href="https://allegato118.github.io/Altro/enhanced_media_extractor2.html" target="_blank">🚀 Enhanced Media Extractor V5.0 - POTENZIATO</a>
 
-- <a href="https://allegato118.github.io/Altro/index.html" target="_blank">🚀🚀 Enhanced Media Extractor V6.0 - POTENZIATO</a>
+- <a href="https://allegato118.github.io/Altro/EnhancedMediaExtractorV6.0-PotenziatoX2.html" target="_blank">🚀🚀 Enhanced Media Extractor V6.0 - POTENZIATO</a>
